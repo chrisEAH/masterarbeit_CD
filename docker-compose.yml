@@ -1,0 +1,67 @@
+version: '2.1'
+
+services:
+
+  postgres:
+    image: 'postgres:9.6-alpine'
+    environment:
+      POSTGRES_DB: gogs
+      POSTGRES_USER: gogs
+      POSTGRES_PASSWORD: gogs
+    ports: ['15432:5432']
+    volumes: 
+      - postgres:/var/lib/postgresql/data
+    networks:
+      cd:
+        aliases: ['postgres']
+    restart: always
+
+  gogs:
+    image: 'gogs/gogs:0.11.79'
+    ports:
+      - '22:22'
+      - '13000:3000'
+    volumes:
+      - 'gogs:/var/gogs/git'
+      - 'gogs:/var/gogs/ssh'
+      - 'gogs:/var/gogs/gogs'
+      - 'gogs:/data'
+    networks:
+      cd:
+        aliases: ['gogs']
+    restart: always
+
+  jenkins:
+    image: 'paua/cd_jenkins'
+    ports:
+      - '18080:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      cd:
+        aliases: ['jenkins']
+    restart: always
+
+  registry:
+    image: 'registry:2'
+    ports:
+      - '5000:5000'
+    volumes:
+      - registry:/var/lib/registry
+    networks:
+      cd:
+        aliases: ['registry']
+    restart: always
+
+
+volumes:
+  postgres:
+  gogs:
+  jenkins:
+  registry:
+
+networks:
+  cd:
+
